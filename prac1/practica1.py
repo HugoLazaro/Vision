@@ -2,44 +2,47 @@ import cv2 # Import python-supported OpenCV functions
 import numpy as np # Import numpy and call it np
 from matplotlib import pyplot as plt # Import pyplot and call it plt
 
+"""
 # initialize the camera
 # If you have multiple camera connected with 
 # current device, assign a value in cam_port 
 # variable according to that
-# cam_port = 0
-# cam = cv2.VideoCapture(cam_port)
+cam_port = -1
+cam = cv2.VideoCapture(cam_port)
 
-# # reading the input using the camera
-# result, image = cam.read()
+# reading the input using the camera
+result, image = cam.read()
 
-# # If image will detected without any error, 
-# # show result
-# if result:
+# If image will detected without any error, 
+# show result
+if result:
 
-#     # showing result, it take frame name and image 
-#     # output
-#     cv2.imshow("GeeksForGeeks", image)
+    # showing result, it take frame name and image 
+    # output
+    cv2.imshow("GeeksForGeeks", image)
 
-#     # saving image in local storage
-#     cv2.imwrite("GeeksForGeeks.png", image)
+    # saving image in local storage
+    cv2.imwrite("GeeksForGeeks.png", image)
 
-#     # If keyboard interrupt occurs, destroy image 
-#     # window
-#     cv2.waitKey(0)
-#     cv2.destroyWindow("GeeksForGeeks")
+    # If keyboard interrupt occurs, destroy image 
+    # window
+    cv2.waitKey(0)
+    cv2.destroyWindow("GeeksForGeeks")
 
-# # If captured image is corrupted, moving to else part
-# else:
-#     print("No image detected. Please! try again")
+# If captured image is corrupted, moving to else part
+else:
+    print("No image detected. Please! try again")
 
-# del(cam)
+del(cam)
+"""
+
 
 # Barrel distorsion
 # Load de image
 img = cv2.imread('lena.jpg')
 
 #Define distorsion coefficient
-k1 = -1 #negative for pincushion
+k1 = 1 #negative for pincushion
 
 # Center of the image
 cx,cy = img.shape[1]/2, img.shape[0]/2
@@ -100,7 +103,6 @@ cv2.destroyAllWindows()
 # cv2.imshow("image", np.hstack([img, img_dist]))
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
-
 
 """
 # Color reduction
