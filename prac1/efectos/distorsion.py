@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def apply_distorsion(image, coefficient):
+def apply(image, coefficient):
     """
     Apply distorsion to an image
 

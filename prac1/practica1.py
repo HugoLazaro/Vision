@@ -3,6 +3,7 @@ import numpy as np # Import numpy and call it np
 from matplotlib import pyplot as plt # Import pyplot and call it plt
 import os
 from efectos import distorsion
+from efectos import contraste
 
 
 
@@ -111,9 +112,9 @@ if filter_choice == "1":
     # Barrel distorsion
     #filtered_img = apply_filter(img, "grayscale")
     k1 = 1
-    filtered_img = distorsion.apply_distorsion(img, k1)
-# elif filter_choice == "2":
-#     filtered_img = apply_filter(img, "blur")
+    filtered_img = distorsion.apply(img, k1)
+elif filter_choice == "2":
+    filtered_img = contraste.apply(img)
 # elif filter_choice == "3":
 #     filtered_img = apply_filter(img, "edges")
 else:
