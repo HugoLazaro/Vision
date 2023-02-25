@@ -1,45 +1,18 @@
 import cv2 # Import python-supported OpenCV functions
 import numpy as np # Import numpy and call it np
 from matplotlib import pyplot as plt # Import pyplot and call it plt
+import os
+from efectos import distorsion
 
-# initialize the camera
-# If you have multiple camera connected with 
-# current device, assign a value in cam_port 
-# variable according to that
-# cam_port = 0
-# cam = cv2.VideoCapture(cam_port)
 
-# # reading the input using the camera
-# result, image = cam.read()
 
-# # If image will detected without any error, 
-# # show result
-# if result:
-
-#     # showing result, it take frame name and image 
-#     # output
-#     cv2.imshow("GeeksForGeeks", image)
-
-#     # saving image in local storage
-#     cv2.imwrite("GeeksForGeeks.png", image)
-
-#     # If keyboard interrupt occurs, destroy image 
-#     # window
-#     cv2.waitKey(0)
-#     cv2.destroyWindow("GeeksForGeeks")
-
-# # If captured image is corrupted, moving to else part
-# else:
-#     print("No image detected. Please! try again")
-
-# del(cam)
-
+""""
 # Barrel distorsion
 # Load de image
 img = cv2.imread('lena.jpg')
 
 #Define distorsion coefficient
-k1 = -1 #negative for pincushion
+k1 = 1 #negative for pincushion
 
 # Center of the image
 cx,cy = img.shape[1]/2, img.shape[0]/2
@@ -60,6 +33,7 @@ img_dist = cv2.undistort(
 cv2.imshow("image", np.hstack([img, img_dist]))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+"""
 
 #Define distorsion coefficient
 # k = -0.5
@@ -102,73 +76,54 @@ cv2.destroyAllWindows()
 # cv2.destroyAllWindows()
 
 
-"""
-# Color reduction
-# Load de image
+
+
+
+
 img = cv2.imread('lena.jpg')
+# Capture an image from the webcam
+# cam_port = 0
+# cam = cv2.VideoCapture(cam_port)
 
-# reshape the image into a feature vector so that k-means
-# can be applied
-pixel_values = img.reshape((-1, 3))
-pixel_values = np.float32(pixel_values)
+# # reading the input using the camera
+# result, img = cam.read()
 
-# apply k-means using the specified number of clusters and
-# then create the quantized image based on the predictions
-numClusters = 4
-criteria = (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER,100,0.85)
-_, labels, centers = cv2.kmeans(pixel_values, numClusters, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+# # If image will detected without any error, 
+# # show result
+# if not result:
+#     print("No image detected. Please! try again")
 
-# Convert the centers to uint8 type
-centers = np.uint8(centers)
+# del(cam)
 
-# Replace each pixel value with its nearby center value
-resized_img = centers[labels.flatten()]
 
-# Reshape the image back to its original shape
-resized_img = resized_img.reshape(img.shape)
+# Display a menu for selecting a filter
+file_counter = 1
+for file in os.listdir("efectos"):
+    if file.endswith(".py"):
+        print("Press {} to apply {} filter".format(str(file_counter), file[:-3]))
+        file_counter = file_counter + 1
 
-# display the images and wait for a keypress
-cv2.imshow("image", np.hstack([img, resized_img]))
+# Take user input for filter selection
+filter_choice = input("Enter your filter choice: ")
+
+# Apply the selected filter to the image
+if filter_choice == "1":
+    # Barrel distorsion
+    #filtered_img = apply_filter(img, "grayscale")
+    k1 = 1
+    filtered_img = distorsion.apply_distorsion(img, k1)
+# elif filter_choice == "2":
+#     filtered_img = apply_filter(img, "blur")
+# elif filter_choice == "3":
+#     filtered_img = apply_filter(img, "edges")
+else:
+    print("Invalid choice, no filter applied")
+    filtered_img = img
+
+
+# Display the original and filtered images side by side
+cv2.imshow("Image", np.hstack([img, filtered_img]))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-"""
-
-"""
-# Contrast and equalization
-imgGrey = cv2.imread('lena.jpg', cv2.IMREAD_GRAYSCALE)
-img = cv2.imread('lena.jpg')
-#cv2.namedWindow( 'Example1', cv2.WINDOW_AUTOSIZE )
-
-cv2.imshow('OriginalGrey',imgGrey)
-
-# Apply histogram equalization to enhance the contrast
-imgGrey_eq = cv2.equalizeHist(imgGrey)
-cv2.imshow('Enhanced', imgGrey_eq)
-
-#hist(images, channels, mask, histSize, ranges hist)
-# color = ('b', 'g', 'r')
-
-# for i, c in enumerate(color):
-#     hist = cv2.calcHist([img],[i], None, [256], [0,256])
-#     plt.plot(hist, color=c)
-
-hist2 = cv2.calcHist([imgGrey],[0], None, [256], [0,256])
-cumulative_hist2 = np.cumsum(hist2)
-plt.plot(cumulative_hist2, color='gray')
-plt.xlabel('intensidad de iluminacion')
-plt.ylabel('cantidad de pixeles')
 
 
-
-hist2_eq = cv2.calcHist([imgGrey_eq],[0], None, [256], [0,256])
-cumulative_hist2_eq = np.cumsum(hist2_eq)
-plt.figure()
-plt.plot(cumulative_hist2_eq, color='gray')
-plt.xlabel('intensidad de iluminacion')
-plt.ylabel('cantidad de pixeles')
-plt.show()
-
-cv2.waitKey(0)
-#cv2.destroyWindow( 'Example1' ) 
-cv2.destroyAllWindows()
-"""
