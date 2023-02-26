@@ -3,6 +3,8 @@ import numpy as np # Import numpy and call it np
 from matplotlib import pyplot as plt # Import pyplot and call it plt
 import os
 
+def apply(image):
+    pass
 
 # img = cv2.imread('lena.jpg')
 
@@ -44,7 +46,7 @@ import os
 # # Mostrar la imagen con el nuevo color de piel
 # cv2.imshow("Imagen con nuevo color de piel", skin)
 # cv2.imshow("image", np.hstack([img, img_arr]))
-
+"""
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
@@ -120,3 +122,4 @@ result_final = cv2.addWeighted(src1, alpha, src2, 1-alpha, 0.0)
 cv2.imwrite('./result_final.png', result_final)
 
 #blending block end
+"""

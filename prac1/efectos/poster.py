@@ -1,9 +1,15 @@
-import cv2 # Import python-supported OpenCV functions
-import numpy as np # Import numpy and call it np
-from matplotlib import pyplot as plt # Import pyplot and call it plt
-import os
+import cv2
+import numpy as np
+
 
 def apply(image, numColors):
+    """
+    Reduce the number of colors in an image
+
+    :param image: image to change the number of colors
+    :param numColors: number of colors to for the new image to have
+    :return: image with the new number of colors
+    """ 
     # Color reduction
  
     # reshape the image into a feature vector so that k-means
@@ -26,7 +32,4 @@ def apply(image, numColors):
     # Reshape the image back to its original shape
     resized_img = resized_img.reshape(image.shape)
 
-    # display the images and wait for a keypress
-    cv2.imshow("image", np.hstack([image, resized_img]))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    return resized_img

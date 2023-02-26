@@ -13,7 +13,7 @@ def apply(image, coefficient):
     # Center of the image
     cx,cy = image.shape[1]/2, image.shape[0]/2
 
-    # Focla lenght
+    # Focal lenght
     fx=image.shape[1]
     fy=image.shape[0]
 
