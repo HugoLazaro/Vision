@@ -4,48 +4,52 @@ from matplotlib import pyplot as plt # Import pyplot and call it plt
 import os
 
 def apply(image):
-    pass
+    # Load the image
+    #img = cv2.imread("image_path.jpg")
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    img_arr = np.array(hsv)
 
-# img = cv2.imread('lena.jpg')
+    # # Define the new skin color as a NumPy array
+    new_skin_color = np.array([120, 100, 100])  # HSV values of the new skin color
 
-# # Load the image
-# #img = cv2.imread("image_path.jpg")
-# hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-# img_arr = np.array(hsv)
+    # # Define a mask that identifies the skin pixels in the image
+    lower_skin_color = np.array([0, 44, 35])  # lower threshold for skin color
+    upper_skin_color = np.array([100, 200, 200])  # upper threshold for skin color
 
-# # # Define the new skin color as a NumPy array
-# new_skin_color = np.array([0, 255, 0])  # RGB values of the new skin color
+    skin_mask = cv2.inRange(img_arr, lower_skin_color, upper_skin_color)
+    cv2.imshow("mascara",skin_mask)
+    cv2.waitKey(0)
 
-# # # Define a mask that identifies the skin pixels in the image
-# lower_skin_color = np.array([90, 60, 60])  # lower threshold for skin color
-# upper_skin_color = np.array([255, 255, 255])  # upper threshold for skin color
+    # # Replace the skin pixels with the new skin color
+    img_arr[skin_mask != 0] = new_skin_color
 
-# skin_mask = cv2.inRange(img_arr, lower_skin_color, upper_skin_color)
+    img_arrRGB = cv2.cvtColor(img_arr, cv2.COLOR_HSV2BGR)
+    return img_arrRGB
 
-# # # Replace the skin pixels with the new skin color
-# img_arr[skin_mask != 0] = new_skin_color
 
-# # Convertir la imagen de BGR a HSV
-# hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-# # Definir los rangos de color de la piel en HSV
-# lower_skin = np.array([0, 20, 70])
-# upper_skin = np.array([20, 255, 255])
+    # # Convertir la imagen de BGR a HSV
+    # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-# # Crear una máscara de la piel
-# mask = cv2.inRange(hsv, lower_skin, upper_skin)
+    # # Definir los rangos de color de la piel en HSV
+    # lower_skin = np.array([0, 20, 70])
+    # upper_skin = np.array([20, 255, 255])
 
-# # Aplicar la máscara a la imagen original
-# skin = cv2.bitwise_and(img, img, mask=mask)
+    # # Crear una máscara de la piel
+    # mask = cv2.inRange(hsv, lower_skin, upper_skin)
 
-# new_skin_color = np.array([0, 255, 0])  # RGB values of the new skin color
-# # Cambiar el color de la piel
-# skin[:,:,0] += 40
-# skin[:,:,1] -= 20
+    # # Aplicar la máscara a la imagen original
+    # skin = cv2.bitwise_and(img, img, mask=mask)
 
-# # Mostrar la imagen con el nuevo color de piel
-# cv2.imshow("Imagen con nuevo color de piel", skin)
-# cv2.imshow("image", np.hstack([img, img_arr]))
+    # new_skin_color = np.array([0, 255, 0])  # RGB values of the new skin color
+    # # Cambiar el color de la piel
+    # skin[:,:,0] += 40
+    # skin[:,:,1] -= 20
+
+    # # Mostrar la imagen con el nuevo color de piel
+    # cv2.imshow("Imagen con nuevo color de piel", skin)
+    # cv2.imshow("image", np.hstack([img, img_arr]))
+
 """
 cv2.waitKey(0)
 cv2.destroyAllWindows()

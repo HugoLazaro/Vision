@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def apply(image, coefficient):
+def apply(image, k1, k2):
     """
     Apply distorsion to an image
 
@@ -11,20 +11,21 @@ def apply(image, coefficient):
     :return: image with distorsion
     """ 
     # Center of the image
-    cx,cy = image.shape[1]/2, image.shape[0]/2
+    xcen,ycen = image.shape[1]/2, image.shape[0]/2
 
     # Focal lenght
     fx=image.shape[1]
     fy=image.shape[0]
 
-    # Distorted image
-    img_dist = cv2.undistort(
-        image,
-        np.array([[fx,0,cx],[0,fy,cy],[0,0,1]]),
-        #coeff ->k1,k2,k3 radial distorsion deviation of lens from perfect sphere
-        #coeff ->p1,p2 tangential distorsion account the offset lens-image sensor -> tilt/shift
-        np.array([0, coefficient, 0, 0, 0]), # distorsion
-        None)
+    new_img = np.zeros((fx,fy,3), np.uint8)
 
-    return img_dist
+    for yd in range(fy):
+        for xd in range(fx):
+            r2 = pow((xd - xcen),2) + pow((yd - ycen),2)
+            xu = xd + (xd - xcen)* k1 * r2 + (xd - xcen)* k2 * pow(r2,2)
+            yu = yd + (yd - ycen)* k1 * r2 + (yd - ycen)* k2 * pow(r2,2)
+            if (xu < image.shape[1]) and (yu < image.shape[1]) and (xu > 0) and (yu > 0):
+                new_img[xd][yd] = image[int(xu)][int(yu)]
+
+    return new_img
 
