@@ -13,7 +13,7 @@ def apply(image, k1, k2):
     # Center of the image
     xcen,ycen = image.shape[1]/2, image.shape[0]/2
 
-    # Focal lenght
+    # Image size
     fx=image.shape[1]
     fy=image.shape[0]
 

@@ -6,6 +6,8 @@ from efectos import distorsion
 from efectos import contraste
 from efectos import alien
 from efectos import poster
+from efectos import pixeles
+
 
 def show_images(img1, img2):
     # Display the original and filtered images side by side
@@ -33,6 +35,7 @@ print("Press 1 to apply contraste filter")
 print("Press 2 to apply alien filter")
 print("Press 3 to apply poster filter")
 print("Press 4 to apply distorsion filter")
+print("Press 5 to apply pixelate filter")
 
 # Take user input for filter selection
 filter_choice = input("Enter your filter choice: ")
@@ -49,11 +52,13 @@ elif filter_choice == "3":
     filtered_img = poster.apply(img, int(numColors))
     show_images(img, filtered_img)
 elif filter_choice == "4":
-     #filtered_img = apply_filter(img, "grayscale")
     k1 = input("Distorsion coefficient 1 to apply to the image: ")
     k2 = input("Distorsion coefficient 2 to apply to the image: ")
     filtered_img = distorsion.apply(img, float(k1), float(k2))
     show_images(img, filtered_img)
+elif filter_choice == "5":
+    pixel_size = input("Number of pixels in the image: ")
+    pixeles.apply(pixel_size)
 else:
     print("Invalid choice, no filter applied")
     filtered_img = img
