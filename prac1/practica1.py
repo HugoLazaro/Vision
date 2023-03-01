@@ -1,7 +1,7 @@
 import cv2 # Import python-supported OpenCV functions
 import numpy as np # Import numpy and call it np
 from matplotlib import pyplot as plt # Import pyplot and call it plt
-import os
+
 from efectos import distorsion
 from efectos import contraste
 from efectos import alien
@@ -15,8 +15,8 @@ def show_images(img1, img2):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-#img = cv2.imread('lena.jpg')
-#Capture an image from the webcam
+
+# Capture an image from the webcam
 cam_port = 0
 cam = cv2.VideoCapture(cam_port)
 
@@ -27,18 +27,19 @@ result, img = cam.read()
 # show result
 if not result:
     print("No image detected. Please! try again")
+    #img = cv2.imread('lena.jpg')
 
 del(cam)
 
 
-print("Press 1 to apply contraste filter")
-print("Press 2 to apply alien filter")
-print("Press 3 to apply poster filter")
-print("Press 4 to apply distorsion filter")
-print("Press 5 to apply pixelate filter")
+print("Press 1 to apply contraste effect")
+print("Press 2 to apply alien effect")
+print("Press 3 to apply poster effect")
+print("Press 4 to apply distorsion effect")
+print("Press 5 to apply pixelate effect")
 
 # Take user input for filter selection
-filter_choice = input("Enter your filter choice: ")
+filter_choice = input("Enter your effect choice: ")
 
 # Apply the selected filter to the image
 if filter_choice == "1":
@@ -58,7 +59,9 @@ elif filter_choice == "4":
     show_images(img, filtered_img)
 elif filter_choice == "5":
     pixel_size = input("Number of pixels in the image: ")
-    pixeles.apply(pixel_size)
+    filtered_img = pixeles.apply(img, pixel_size)
+    show_images(img, filtered_img)
+
 else:
-    print("Invalid choice, no filter applied")
+    print("Invalid choice, no effect applied")
     filtered_img = img
