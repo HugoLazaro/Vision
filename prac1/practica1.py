@@ -27,7 +27,7 @@ result, img = cam.read()
 # show result
 if not result:
     print("No image detected. Please! try again")
-    #img = cv2.imread('lena.jpg')
+    img = cv2.imread('lena.jpg')
 
 del(cam)
 
