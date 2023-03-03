@@ -17,31 +17,19 @@ def apply(image, k1, k2):
     fx=image.shape[1]
     fy=image.shape[0]
 
-    print("Image size: " + str(fx) + ", " + str(fy))
-    
-
-    new_img = np.zeros((fy,fx,3), np.uint8)
-    print("New image size: " + str(new_img.shape[1]) + ", " + str(new_img.shape[0]))
-    i = 0
+    #print("Image size: " + str(fx) + ", " + str(fy))
+    map_x = np.zeros((fy,fx),np.float32)
+    map_y = np.zeros((fy,fx),np.float32)
 
     for yd in range(fy):
         for xd in range(fx):
             r2 = pow((xd - xcen),2) + pow((yd - ycen),2)
             xu = xd + (xd - xcen)* k1 * r2 + (xd - xcen)* k2 * pow(r2,2)
             yu = yd + (yd - ycen)* k1 * r2 + (yd - ycen)* k2 * pow(r2,2)
-            xu = int(np.round(xu))
-            yu = int(np.round(yu))
             
-            if float(xu) < fy and yu < fy and xu > 0 and yu > 0:
-                try:
-                    new_img[xd][yd] = image[xu][yu]
-                except:
-                    i = i+1
-                    # print("i: " + str(i))
-                    # print("fx: " + str(fx))
-                    # print("fy: " + str(fy))
-                    print("xu: " + str(xu))
-                    print("yu: " + str(yu))
-                #new_img[xd][yd] = image[xu][yu]
+            map_x[yd,xd] = xu
+            map_y[yd,xd] = yu
 
+    new_img = cv2.remap(image, map_x, map_y, cv2.INTER_LINEAR)
+    
     return new_img
