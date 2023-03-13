@@ -32,7 +32,7 @@ show_image(cv2.normalize(sobely / 2 + 128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV
 # Calcular la magnitud y dirección del gradiente
 mag = np.sqrt(sobelx**2 + sobely**2)#The magnitude of the gradient is computed using the formula sqrt(Gx^2 + Gy^2)
 mag = np.uint8(mag / np.max(mag) * 255) # normalizar la magnitud a valores entre 0 y 255
-theta = np.arctan2(sobely, sobelx) + np.pi # PREGUNTAR: En radianes? Rango 0,2pi?
+theta = np.arctan2(sobely,sobelx) + np.pi # PREGUNTAR: En radianes? Rango 0,2pi?
 
 show_image(cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Magnitude')
 show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta')
@@ -42,31 +42,34 @@ show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_
 
 # The gradient direction is rounded to one of four possible angles (0, 45, 90, 135). 
 # to simplify the subsequent comparisons of gradient magnitude between neighboring pixels.
-theta = theta * 135/(2*np.pi) # Rango: [0,135]
+theta = theta * 180/(np.pi) # Rango: [0,135]
 #theta = theta * 180/(np.pi) # Rango: [0,360]
 
-theta = np.round(theta / 45) * 45
+theta = np.round((theta) / 22.5)
+#theta = (theta / 22.5)
 suppressed = np.zeros_like(mag)# store the results of the non-maximum suppression operation
 for i in range(1, mag.shape[0]-1):
     for j in range(1, mag.shape[1]-1):
-        direction = theta[i, j]
-        if direction == 0:
+        (direction) = int(theta[i, j])
+        if direction == 0 or direction == 16 or direction == 15 or direction == 7 or direction == 8:
             #abajo, arriba
             neighbors = [mag[i, j-1], mag[i, j+1]]
-        elif direction == 45:
+        elif direction == 13 or direction == 14 or direction == 5 or direction == 6:
             #arribaIZQ, abajoDER
             neighbors = [mag[i-1, j+1], mag[i+1, j-1]]
-        elif direction == 90:
+        elif direction == 11 or direction == 12 or direction == 3 or direction == 4:
             #IZQ, DER
             neighbors = [mag[i-1, j], mag[i+1, j]]
-        else:
+        elif direction == 9 or direction == 10 or direction == 1 or direction == 2:
             #abajoIZQ, arribaDER
             neighbors = [mag[i-1, j-1], mag[i+1, j+1]]
+
         if mag[i, j] >= neighbors[0] and mag[i, j] >= neighbors[1]:
             suppressed[i, j] = mag[i, j]
 
-show_image(suppressed, 'Vecinos')
-
+strong_i, strong_j = np.where(suppressed > 20)
+suppressed[strong_i,strong_j] = 255
+show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
 
 
 
