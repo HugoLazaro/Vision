@@ -14,9 +14,13 @@ show_image(img, 'Image')
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 # Aplicar un filtro de suavizado para reducir el ruido de la imagen
-blur = cv2.GaussianBlur(gray, (5, 5), 0) # PREGUNTAR: Sigma variable???
-show_image(blur, 'Blur')
+sigma = 1
+kernel_size = 5*sigma
 
+
+blur = cv2.GaussianBlur(gray, (kernel_size, kernel_size), sigma) # PREGUNTAR: Sigma variable???
+show_image(blur, 'Blur')
+sigma
 # Calcular los gradientes de la imagen utilizando el operador de Sobel
 # compute the approximate derivatives in the x and y directions
 sobelx = cv2.Sobel(blur, cv2.CV_64F, 1, 0, ksize=3)
@@ -38,57 +42,32 @@ show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_
 
 # The gradient direction is rounded to one of four possible angles (0, 45, 90, 135). 
 # to simplify the subsequent comparisons of gradient magnitude between neighboring pixels.
-theta = theta * 135/(2*np.pi) # Rango: [0,135]?
-#theta = theta * 180/(np.pi) # Rango: [0,360]?
+theta = theta * 135/(2*np.pi) # Rango: [0,135]
+#theta = theta * 180/(np.pi) # Rango: [0,360]
 
-#-45 a 135 grados
-# PREGUNTAR: Por que es la perpendicular???
 theta = np.round(theta / 45) * 45
 suppressed = np.zeros_like(mag)# store the results of the non-maximum suppression operation
 for i in range(1, mag.shape[0]-1):
     for j in range(1, mag.shape[1]-1):
         direction = theta[i, j]
         if direction == 0:
-            #abajo, arriba???
+            #abajo, arriba
             neighbors = [mag[i, j-1], mag[i, j+1]]
         elif direction == 45:
-            #arribaIZQ, abajoDER?????
+            #arribaIZQ, abajoDER
             neighbors = [mag[i-1, j+1], mag[i+1, j-1]]
         elif direction == 90:
-            #IZQ, DER??
+            #IZQ, DER
             neighbors = [mag[i-1, j], mag[i+1, j]]
         else:
-            #abajoIZQ, arribaDER??
+            #abajoIZQ, arribaDER
             neighbors = [mag[i-1, j-1], mag[i+1, j+1]]
         if mag[i, j] >= neighbors[0] and mag[i, j] >= neighbors[1]:
             suppressed[i, j] = mag[i, j]
 
+show_image(suppressed, 'Vecinos')
 
-# Aplicar el umbral doble para detectar los bordes finales
-low_thresh = 30
-high_thresh = 60
 
-edges = np.zeros_like(suppressed)
-strong_i, strong_j = np.where(suppressed >= high_thresh)
-weak_i, weak_j = np.where((suppressed >= low_thresh) & (suppressed < high_thresh))
-edges[strong_i, strong_j] = 255
-
-# Itera sobre las coordenadas de los píxeles débiles
-for i, j in zip(weak_i, weak_j):
-    # Define una ventana de 3x3 alrededor del píxel actual
-    i_start = max(0, i-1)
-    i_end = min(edges.shape[0], i+2)
-    j_start = max(0, j-1)
-    j_end = min(edges.shape[1], j+2)
-    window = edges[i_start:i_end, j_start:j_end]
-    
-    # Verifica si algún píxel en la ventana tiene un valor de 255 (es decir, está en los bordes fuertes)
-    if np.max(window) == 255:
-        # Si sí, establece el valor del píxel actual en 255
-        edges[i, j] = 255
-
-# Mostrar la imagen con los bordes detectados
-show_image(edges, 'Edges')
 
 
 
