@@ -74,18 +74,74 @@ show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 
 
 
 
-def vote_line(i,j,p,theta):
-    pass
+# def vote_line(i,j,p,theta):
+#     pass
+
+# def hough(img, mag, orientation, threshold):
+#     for i in range(0, img.shape[1]):
+#         for j in range(0, img.shape[0]):
+#             if mag[i,j]>=threshold:
+#                 x = j - img.shape[0]/2
+#                 y = img.shape[1]/2 - i
+#                 theta = orientation[i,j]
+#                 p = x*np.cos(theta) + y*np.sin(theta)
+#                 vote_line(i,j,p,theta)
+
+###############################################
+
+# La función hough toma como entrada la imagen img, una matriz de magnitudes de gradientes mag, 
+# una matriz de orientaciones de gradientes orientation y un umbral threshold para determinar 
+# qué píxeles deben ser considerados para la detección de líneas. La función devuelve una matriz 
+# accumulator que almacena los votos para cada línea en el espacio de parámetros.
+
+# La función vote_line es llamada por hough para votar por cada línea detectada en la imagen. 
+# La función toma como entrada los índices i y j del píxel en la imagen, la distancia p y el 
+# ángulo theta de la línea en el espacio de parámetros, y la matriz accumulator que almacena 
+# los votos para cada línea en el espacio de parámetros. La función redondea p y theta a 
+# enteros y luego incrementa el contador para la línea correspondiente en accumulator.
+
 
 def hough(img, mag, orientation, threshold):
+    # Definir la resolución del espacio de parámetros
+    p_resolution = int(np.sqrt((img.shape[0]/2)**2 + (img.shape[1]/2)**2))
+    theta_resolution = 360
+
+    # Inicializar el acumulador con ceros
+    accumulator = np.zeros((p_resolution, theta_resolution), dtype=np.uint64)
+
+    # Iterar sobre todos los píxeles de la imagen
     for i in range(0, img.shape[1]):
         for j in range(0, img.shape[0]):
-            if mag[i,j]>=threshold:
+            if mag[i, j] >= threshold:
+                # Calcular los parámetros de la línea que pasa por el píxel
                 x = j - img.shape[0]/2
                 y = img.shape[1]/2 - i
-                theta = orientation[i,j]
+                theta = orientation[i, j]
                 p = x*np.cos(theta) + y*np.sin(theta)
-                vote_line(i,j,p,theta)
-     
 
+                # Votar por la línea en el espacio de parámetros
+                vote_line(i, j, p, theta, accumulator)
+
+    return accumulator
+
+def vote_line(i, j, p, theta, accumulator):
+    """
+    Incrementa el contador para la línea en el espacio de parámetros.
+    
+    :param i: índice y del píxel en la imagen.
+    :param j: índice x del píxel en la imagen.
+    :param p: distancia de la línea al origen en el espacio de parámetros.
+    :param theta: ángulo de la línea en el espacio de parámetros.
+    :param accumulator: matriz que almacena los votos para cada línea en el espacio de parámetros.
+    """
+    # Redondea los valores de p y theta a enteros
+    p = int(round(p))
+    theta = int(round(theta))
+
+    # Calcula la distancia del píxel al centro de la imagen
+    x0, y0 = accumulator.shape[1] // 2, accumulator.shape[0] // 2
+    r = np.sqrt((i - y0)**2 + (j - x0)**2)
+
+    # Incrementa el contador para la línea en el espacio de parámetros
+    accumulator[int(p+r), theta] += 1
 
