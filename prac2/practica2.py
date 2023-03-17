@@ -6,105 +6,43 @@ def show_image(img, title='Image'):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-###############################################
 
-# La función hough toma como entrada la imagen img, una matriz de magnitudes de gradientes mag, 
-# una matriz de orientaciones de gradientes orientation y un umbral threshold para determinar 
-# qué píxeles deben ser considerados para la detección de líneas. La función devuelve una matriz 
-# accumulator que almacena los votos para cada línea en el espacio de parámetros.
+# Hough transform
+def hough(img, mag, m, theta):
+    votes = np.zeros(img.shape[0])
+    height_votes = img.shape[0]/2
+    threshold = 20
 
-# La función vote_line es llamada por hough para votar por cada línea detectada en la imagen. 
-# La función toma como entrada los índices i y j del píxel en la imagen, la distancia p y el 
-# ángulo theta de la línea en el espacio de parámetros, y la matriz accumulator que almacena 
-# los votos para cada línea en el espacio de parámetros. La función redondea p y theta a 
-# enteros y luego incrementa el contador para la línea correspondiente en accumulator.
+    for j in range(0, mag.shape[1]):
+        for i in range(0, mag.shape[0]):
+            if mag[i,j]>=threshold:
+                direction = int(theta[i, j])
+                # No cogemos los puntos cuya direcction sea +- 22,5 grados sobre un eje
+                if not (direction == 0 or direction == 16 or direction == 15 or direction == 7 or direction == 8 
+                    or direction == 11 or direction == 12 or direction == 3 or direction == 4):
+                    b = i - m[i,j]*j
+                    y = height_votes
+                    x = (y - b) / m[i,j]
+                    
+                    cv2.circle(img, (int(i), int(j)), 1, (255, 255, 0), -1)
 
+                    x = int(x)
+                    if x < img.shape[1] and x >= 0:
+                        votes[x] = votes[x] + 1
 
-# def hough(img, mag, orientation, threshold):
-#     # Definir la resolución del espacio de parámetros
-#     p_resolution = int(np.sqrt((img.shape[0]/2)**2 + (img.shape[1]/2)**2))
-#     theta_resolution = 360
+    cv2.imshow('Imagen con rectas', img)
+    cv2.waitKey()
 
-#     # Inicializar el acumulador con ceros
-#     accumulator = np.zeros((p_resolution, theta_resolution), dtype=np.uint64)
+    #print(votes)
 
-#     # Iterar sobre todos los píxeles de la imagen
-#     for i in range(0, img.shape[1]):
-#         for j in range(0, img.shape[0]):
-#             if mag[i, j] >= threshold:
-#                 # Calcular los parámetros de la línea que pasa por el píxel
-#                 x = j - img.shape[0]/2
-#                 y = img.shape[1]/2 - i
-#                 theta = orientation[i, j]
-#                 p = x*np.cos(theta) + y*np.sin(theta)
+    vanishing_point = np.argmax(votes)
+    return vanishing_point
 
-#                 # Votar por la línea en el espacio de parámetros
-#                 vote_line(i, j, p, theta, accumulator)
-
-#     return accumulator
-
-# def vote_line(i, j, p, theta, accumulator):
-#     """
-#     Incrementa el contador para la línea en el espacio de parámetros.
-    
-#     :param i: índice y del píxel en la imagen.
-#     :param j: índice x del píxel en la imagen.
-#     :param p: distancia de la línea al origen en el espacio de parámetros.
-#     :param theta: ángulo de la línea en el espacio de parámetros.
-#     :param accumulator: matriz que almacena los votos para cada línea en el espacio de parámetros.
-#     """
-#     # Redondea los valores de p y theta a enteros
-#     p = int(round(p))
-#     theta = int(round(theta))
-
-#     # Calcula la distancia del píxel al centro de la imagen
-#     x0, y0 = accumulator.shape[1] // 2, accumulator.shape[0] // 2
-#     r = np.sqrt((i - y0)**2 + (j - x0)**2)
-
-#     # Incrementa el contador para la línea en el espacio de parámetros
-#     accumulator[int(p+r), theta] += 1
-
-# ###############################################
-
-def hough(img, mag, orientation, threshold):
-    rows, cols = img.shape
-    accumulator = np.zeros((rows, cols),dtype=np.uint8)
-
-    for i in range(rows):
-        for j in range(cols):
-            if mag[i, j] >= threshold:
-                x = j - cols / 2
-                y = rows / 2 - i
-                theta = orientation[i, j]
-                p = x * np.cos(theta) + y * np.sin(theta)
-                vote_line(accumulator, p, theta)
-
-    return accumulator
-
-def vote_line(accumulator, p, theta, rho_res=1, theta_res=np.pi/180):
-    rows, cols = accumulator.shape
-    rho_max = np.sqrt(rows**2 + cols**2)
-
-    rho = int((p + rho_max) / rho_res)
-    t = int(theta / theta_res)
-
-    if rho >= 0 and rho < rows and t >= 0 and t < cols:
-        accumulator[rho, t] += 1
-
-def vote_line(i, j, p, theta, accumulator):
-    a = math.cos(theta)
-    b = math.sin(theta)
-    x = int(p * a + j)
-    y = int(p * b + i)
-    if x >= 0 and x < accumulator.shape[1] and y >= 0 and y < accumulator.shape[0]:
-        accumulator[y, x] += 1
-
-###############################################
 
 
 
 # Leer la imagen del pasillo
-img = cv2.imread('img/Contornos/poster.pgm')#(512, 512, 3)
+img = cv2.imread('img/Contornos/pasillo1.pgm')#(512, 512, 3)
 show_image(img, 'Image')
 
 # Convertir la imagen a escala de grises
@@ -130,7 +68,7 @@ sobely = cv2.Sobel(blur, cv2.CV_64F, 0, 1, ksize=3)
 mag = np.sqrt(sobelx**2 + sobely**2)#The magnitude of the gradient is computed using the formula sqrt(Gx^2 + Gy^2)
 mag = np.uint8(mag / np.max(mag) * 255) # normalizar la magnitud a valores entre 0 y 255
 theta = np.arctan2(sobely,sobelx) + np.pi # PREGUNTAR: En radianes? Rango 0,2pi?
-
+m = theta
 show_image(cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Magnitude')
 #show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta')
 
@@ -166,20 +104,44 @@ for i in range(1, mag.shape[0]-1):
 
 strong_i, strong_j = np.where(suppressed > 20)
 suppressed[strong_i,strong_j] = 255
-#show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
+show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
+
+vanishing_point = hough(suppressed, mag, m, theta)
+
+dst = cv2.Canny(gray, 50, 200, None, 3)
+
+# Copy edges to the images that will display the results in BGR
+cdst = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
+cdstP = np.copy(cdst)
+
+lines = cv2.HoughLines(dst, 1, np.pi / 180, 150, None, 0, 0)
+
+if lines is not None:
+    for i in range(0, len(lines)):
+        rho = lines[i][0][0]
+        theta = lines[i][0][1]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a * rho
+        y0 = b * rho
+        pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
+        pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+        cv2.line(cdst, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
 
 
+linesP = cv2.HoughLinesP(dst, 1, np.pi / 180, 50, None, 50, 10)
 
+if linesP is not None:
+    for i in range(0, len(linesP)):
+        l = linesP[i][0]
+        cv2.line(cdstP, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
+    
+cv2.imshow("Detected Lines (in red) - Standard Hough Line Transform", cdst)
 
-# def vote_line(i,j,p,theta):
-#     pass
+print("van: " + str(vanishing_point))
+print("center: " + str(img.shape[0]/2))
 
-# def hough(img, mag, orientation, threshold):
-#     for i in range(0, img.shape[1]):
-#         for j in range(0, img.shape[0]):
-#             if mag[i,j]>=threshold:
-#                 x = j - img.shape[0]/2
-#                 y = img.shape[1]/2 - i
-#                 theta = orientation[i,j]
-#                 p = x*np.cos(theta) + y*np.sin(theta)
-#                 vote_line(i,j,p,theta)
+cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1)
+
+cv2.imshow('Imagen con rectas de Hough', img)
+cv2.waitKey()
