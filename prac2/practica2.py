@@ -41,30 +41,30 @@ def hough_lines(gray_hough_lines):
 
 
 # Hough transform
-def hough(img, mag, m, theta):
+def hough(img, mag, m):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
     height_votes = img.shape[0]/2
     threshold = 15
-    
+
     for j in range(0, mag.shape[1]):
         for i in range(0, mag.shape[0]):
             if mag[i,j]>=threshold:
-                direction = int(theta[i, j])
-                # No cogemos los puntos cuya direcction sea +- 22,5 grados sobre un eje
-                if not (direction == 0 or direction == 16 or direction == 15 or direction == 7 or direction == 8 
-                   or direction == 11 or direction == 12 or direction == 3 or direction == 4):
+                direction = float(m[i, j])
+                # lineas verticales -> if ((direction > 2.5) and (direction < 3.5)):
+                if ((direction > 2) and (direction < 2.5)):    
                     b = i - m[i,j]*j
                     y = height_votes
                     x = (y - b) / m[i,j]
                 
                     # cv2.circle(img, (int(j), int(i)), 1, (255, 255, 0), -1)
                 
- 
+
                     x = int(x)
                     y = int(y)
-                    if x < img.shape[1] and x >= 0:
-                        cv2.line(img_save, (i,j), (x,y), (255,255,0), 1, cv2.LINE_AA)
+                    if x < img_save.shape[1] and x >= 0:
+                        #cv2.line(img_save, (i,j), (x,y), (255,255,0), 1, cv2.LINE_AA)
+                        cv2.circle(img_save, (int(j), int(i)), 1, (255, 255, 0), -1)
                         votes[x] = votes[x] + 1
                         
 
@@ -81,7 +81,7 @@ def hough(img, mag, m, theta):
 
 
 # Leer la imagen del pasillo
-img = cv2.imread('img/Contornos/el_pasillo.png')#(512, 512, 3)
+img = cv2.imread('img/Contornos/pasillo1.pgm')#(512, 512, 3)
 show_image(img, 'Image')
 
 # Convertir la imagen a escala de grises
@@ -106,11 +106,11 @@ sobely = cv2.Sobel(blur, cv2.CV_64F, 0, 1, ksize=3)
 # Calcular la magnitud y dirección del gradiente
 mag = np.sqrt(sobelx**2 + sobely**2)#The magnitude of the gradient is computed using the formula sqrt(Gx^2 + Gy^2)
 mag = np.uint8(mag / np.max(mag) * 255) # normalizar la magnitud a valores entre 0 y 255
-mag_save = mag
+mag_save = mag.copy()
 theta = np.arctan2(sobely,sobelx) + np.pi # PREGUNTAR: En radianes? Rango 0,2pi?
-m = theta
-show_image(cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Magnitude')
-show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta')
+m = theta.copy()
+#show_image(cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Magnitude')
+#show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta')
 
 # Aplicar la supresión de no máximos para afinar los bordes detectados
 #selecting the local maximum of the gradient magnitude in the direction of the gradient orientation.
@@ -146,13 +146,13 @@ for i in range(1, mag.shape[0]-1):
 
 strong_i, strong_j = np.where(suppressed > 20)
 suppressed[strong_i,strong_j] = 255
-show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
+#show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
 
 
 
 # HOUGH
 gray_hough_lines = gray.copy()
-vanishing_point = hough(gray, suppressed, m, theta)
+vanishing_point = hough(gray, suppressed, m)
 
 
 hough_lines(gray_hough_lines)
