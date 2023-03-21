@@ -57,7 +57,7 @@ def hough_lines(gray_hough_lines):
 def hough(img, mag, m):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
-    height_votes = int(img.shape[0]/2) - 50
+    height_votes = int(img.shape[0]/2)
     threshold = 15
 
     # # Encontramos los índices de los valores mayores que 5
@@ -90,7 +90,10 @@ def hough(img, mag, m):
                         
                         #cv2.circle(img_save, (columna, fila), 1, (255, 255, 0), -1)
 
-                        cv2.circle(img_save, (int(j), int(i)), 1, (255, 255, 0), -1)
+                        
+                        if x > 400:
+                            #cv2.circle(img_save, (int(j), int(i)), 1, (255, 255, 0), -1)
+                            cv2.line(img_save, (j,i), (x,y), (255,255,0), 1, cv2.LINE_AA)
                         votes[x] = votes[x] + 1
                         #cv2.circle(img_save, (int(x), int(y)), 1, (255, 255, 0), -1)
                         
@@ -107,7 +110,7 @@ def hough(img, mag, m):
 
 
 # Leer la imagen del pasillo
-img = cv2.imread('img/Contornos/pasillo1.pgm')#(512, 512, 3)
+img = cv2.imread('img/Contornos/pasillo2.pgm')#(512, 512, 3)
 show_image(img, 'Image')
 
 # Convertir la imagen a escala de grises
@@ -194,7 +197,7 @@ hough_lines(gray_hough_lines)
 print("van: " + str(vanishing_point))
 print("center: " + str(img.shape[0]/2))
 
-cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2) - 50), 5, (0, 0, 255), -1)
+cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1)
 
 cv2.imshow('Imagen con rectas de Hough', img)
 cv2.waitKey()
