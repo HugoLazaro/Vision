@@ -7,6 +7,19 @@ def show_image(img, title='Image'):
     cv2.destroyAllWindows()
 
 
+def non_maximal_suppression():
+    pass
+
+# Normalizr angle from -pi to pi to 0 to 2pi
+def normalize_angle(angle):
+    if angle < 0:
+        angle = angle + 2*np.pi
+    return angle
+
+# Angle from 0 to 2pi to degrees
+def angle_to_degrees(angle):
+    return angle * 180 / np.pi
+
 def hough_lines(gray_hough_lines):
 
     dst = cv2.Canny(gray_hough_lines, 50, 200, None, 3)
@@ -44,18 +57,29 @@ def hough_lines(gray_hough_lines):
 def hough(img, mag, m):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
-    height_votes = img.shape[0]/2
+    height_votes = int(img.shape[0]/2) - 50
     threshold = 15
 
-    for j in range(0, mag.shape[1]):
-        for i in range(0, mag.shape[0]):
+    # # Encontramos los índices de los valores mayores que 5
+    # indices = np.where(m < 0)
+
+    # # Imprimimos los índices encontrados
+    # print(indices)
+    print(mag.shape)
+
+
+    for j in range(0, mag.shape[1]):#Recorre columnas(horiontal) -> x 
+        for i in range(0, mag.shape[0]):#Recorre filas(vertical) -> y
             if mag[i,j]>=threshold:
-                direction = float(m[i, j])
-                # lineas verticales -> if ((direction > 2.5) and (direction < 3.5)):
-                if ((direction > 2) and (direction < 2.5)):    
-                    b = i - m[i,j]*j
+                direction = float(m[i, j]) 
+                direction = angle_to_degrees(direction)
+                #if (direction < 10 or direction > 350) or (direction > 170 and direction < 190):  verticales  
+                #if (direction < 100 and direction > 80) or (direction > 260 and direction < 280): horizontales
+                if not((direction < 20 or direction > 340) or (direction > 160 and direction < 200)
+                    or (direction < 110 and direction > 70) or (direction > 250 and direction < 290)):
+                    b = i - (m[i,j]+np.pi)*j
                     y = height_votes
-                    x = (y - b) / m[i,j]
+                    x = (y - b) / (m[i,j]+np.pi)
                 
                     # cv2.circle(img, (int(j), int(i)), 1, (255, 255, 0), -1)
                 
@@ -63,12 +87,14 @@ def hough(img, mag, m):
                     x = int(x)
                     y = int(y)
                     if x < img_save.shape[1] and x >= 0:
-                        #cv2.line(img_save, (i,j), (x,y), (255,255,0), 1, cv2.LINE_AA)
+                        
+                        #cv2.circle(img_save, (columna, fila), 1, (255, 255, 0), -1)
+
                         cv2.circle(img_save, (int(j), int(i)), 1, (255, 255, 0), -1)
                         votes[x] = votes[x] + 1
+                        #cv2.circle(img_save, (int(x), int(y)), 1, (255, 255, 0), -1)
                         
-
-    cv2.imshow('Imagen con rectas', img_save)
+    cv2.imshow('Imagen con punto de fuga', img_save)
     cv2.waitKey()
 
     #print(votes)
@@ -107,7 +133,14 @@ sobely = cv2.Sobel(blur, cv2.CV_64F, 0, 1, ksize=3)
 mag = np.sqrt(sobelx**2 + sobely**2)#The magnitude of the gradient is computed using the formula sqrt(Gx^2 + Gy^2)
 mag = np.uint8(mag / np.max(mag) * 255) # normalizar la magnitud a valores entre 0 y 255
 mag_save = mag.copy()
-theta = np.arctan2(sobely,sobelx) + np.pi # PREGUNTAR: En radianes? Rango 0,2pi?
+theta = np.arctan2(sobely,sobelx) # PREGUNTAR: En radianes? Rango 0,2pi?
+
+# Creamos una versión vectorizada de la función
+normalize_angle_vectorized = np.vectorize(normalize_angle)
+
+# Aplicamos la función vectorizada a cada elemento de la matriz
+theta = normalize_angle_vectorized(theta)
+
 m = theta.copy()
 #show_image(cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Magnitude')
 #show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta')
@@ -146,7 +179,7 @@ for i in range(1, mag.shape[0]-1):
 
 strong_i, strong_j = np.where(suppressed > 20)
 suppressed[strong_i,strong_j] = 255
-#show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
+show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
 
 
 
@@ -161,7 +194,7 @@ hough_lines(gray_hough_lines)
 print("van: " + str(vanishing_point))
 print("center: " + str(img.shape[0]/2))
 
-cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1)
+cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2) - 50), 5, (0, 0, 255), -1)
 
 cv2.imshow('Imagen con rectas de Hough', img)
 cv2.waitKey()
