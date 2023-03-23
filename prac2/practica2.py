@@ -58,9 +58,10 @@ def hough_lines(gray_hough_lines):
 def hough(img, mag, m):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
-    height_votes = int(img.shape[0]/2)-40
+    height_votes = int(img.shape[0]/2) #Pasillo 1
+    #height_votes = int(img.shape[0]/2)-40 #Pasillo 2
     print(height_votes)
-    threshold = 60
+    threshold = 10
 
     # # Encontramos los índices de los valores mayores que 5
     # indices = np.where(m < 0)
@@ -77,8 +78,8 @@ def hough(img, mag, m):
                 direction = angle_to_degrees(direction)
                 #if (direction < 10 or direction > 350) or (direction > 170 and direction < 190):  verticales  
                 #if (direction < 100 and direction > 80) or (direction > 260 and direction < 280): horizontales
-                if not((direction < 20 or direction > 340) or (direction > 160 and direction < 200)
-                    or (direction < 110 and direction > 70) or (direction > 250 and direction < 290)):
+                if not((direction < 10 or direction > 350) or (direction > 170 and direction < 190)
+                    or (direction < 100 and direction > 80) or (direction > 260 and direction < 280)):
                     b = j - (m[i,j])*i
                     y = height_votes
                     # x = (y - b) / np.tan(m[i,j])
@@ -117,7 +118,7 @@ def hough(img, mag, m):
 
 
 # Leer la imagen del pasillo
-img = cv2.imread('img/Contornos/pasillo1.pgm')#(512, 512, 3)
+img = cv2.imread('img/Contornos/pasillo3.pgm')#(512, 512, 3)
 show_image(img, 'Image')
 
 # Convertir la imagen a escala de grises
@@ -205,7 +206,8 @@ hough_lines(gray_hough_lines)
 print("van: " + str(vanishing_point))
 print("center: " + str(img.shape[0]/2))
 
-cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)-40), 5, (0, 0, 255), -1)
+#cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)-40), 5, (0, 0, 255), -1) #Pasillo1
+cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1) #Pasillo2
 
 cv2.imshow('Imagen con rectas de Hough', img)
 cv2.waitKey()
