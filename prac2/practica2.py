@@ -58,8 +58,8 @@ def hough_lines(gray_hough_lines):
 def hough(img, mag, m):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
-    height_votes = int(img.shape[0]/2) #Pasillo 1
-    #height_votes = int(img.shape[0]/2)-40 #Pasillo 2
+    #height_votes = int(img.shape[0]/2) -40 #Pasillo 1
+    height_votes = int(img.shape[0]/2) #Pasillo 2y3
     print(height_votes)
     threshold = 10
 
@@ -207,7 +207,7 @@ print("van: " + str(vanishing_point))
 print("center: " + str(img.shape[0]/2))
 
 #cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)-40), 5, (0, 0, 255), -1) #Pasillo1
-cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1) #Pasillo2
+cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1) #Pasillo2y3
 
 cv2.imshow('Imagen con rectas de Hough', img)
 cv2.waitKey()
