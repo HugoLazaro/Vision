@@ -7,8 +7,30 @@ def show_image(img, title='Image'):
     cv2.destroyAllWindows()
 
 
-def non_maximal_suppression():
-    pass
+def non_maximal_suppression(mag, theta):
+    theta = np.round((theta) / 22.5)
+    
+    suppressed = np.zeros_like(mag)# store the results of the non-maximum suppression operation
+    for i in range(1, mag.shape[0]-1):
+        for j in range(1, mag.shape[1]-1):
+            (direction) = int(theta[i, j])
+            if direction == 0 or direction == 16 or direction == 15 or direction == 7 or direction == 8:
+                #abajo, arriba
+                neighbors = [mag[i, j-1], mag[i, j+1]]
+            elif direction == 13 or direction == 14 or direction == 5 or direction == 6:
+                #arribaIZQ, abajoDER
+                neighbors = [mag[i-1, j+1], mag[i+1, j-1]]
+            elif direction == 11 or direction == 12 or direction == 3 or direction == 4:
+                #IZQ, DER
+                neighbors = [mag[i-1, j], mag[i+1, j]]
+            elif direction == 9 or direction == 10 or direction == 1 or direction == 2:
+                #abajoIZQ, arribaDER
+                neighbors = [mag[i-1, j-1], mag[i+1, j+1]]
+
+            if mag[i, j] >= neighbors[0] and mag[i, j] >= neighbors[1]:
+                suppressed[i, j] = mag[i, j]
+    
+    return suppressed
 
 # Normalizr angle from -pi to pi to 0 to 2pi
 def normalize_angle(angle):
@@ -58,15 +80,7 @@ def hough_lines(gray_hough_lines):
 def hough(img, mag, m, height_votes):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
-    print(height_votes)
     threshold = 10
-
-    # # Encontramos los índices de los valores mayores que 5
-    # indices = np.where(m < 0)
-
-    # # Imprimimos los índices encontrados
-    # print(indices)
-    print(mag.shape)
 
 
     for j in range(0, mag.shape[1]):#Recorre columnas(horiontal) -> x 
@@ -74,39 +88,28 @@ def hough(img, mag, m, height_votes):
             if mag[i,j]>=threshold:
                 direction = float(m[i, j]) 
                 direction = angle_to_degrees(direction)
-                #if (direction < 10 or direction > 350) or (direction > 170 and direction < 190):  verticales  
-                #if (direction < 100 and direction > 80) or (direction > 260 and direction < 280): horizontales
+                
                 if not((direction < 10 or direction > 350) or (direction > 170 and direction < 190)
                     or (direction < 100 and direction > 80) or (direction > 260 and direction < 280)):
                     b = j - (m[i,j])*i
                     y = height_votes
-                    # x = (y - b) / np.tan(m[i,j])
-                    x = (y - b) / (m[i,j])
                     
-                    # cv2.circle(img, (int(j), int(i)), 1, (255, 255, 0), -1)
-                
+                    x = (y - b) / (m[i,j])
 
                     x = int(x)
                     y = int(y)
-                    if x < img_save.shape[1]-2 and x > 1:
+                    if x < img.shape[1]-2 and x > 1:
                         
                         cv2.circle(img_save, (j, i), 1, (255, 255, 0), -1)
 
-                        
-                        #if x > 100:
-                            #cv2.circle(img_save, (int(j), int(i)), 1, (255, 255, 0), -1)
-                            #cv2.line(img_save, (j,i), (x,y), (255,255,0), 1, cv2.LINE_AA)
                         votes[x] = votes[x] + 3
                         votes[x+1] = votes[x+1] + 2
                         votes[x+2] = votes[x+2] + 1
                         votes[x-1] = votes[x-1] + 2
                         votes[x-2] = votes[x-2] + 1
-                        #cv2.circle(img_save, (int(x), int(y)), 1, (255, 255, 0), -1)
                         
-    cv2.imshow('Imagen con punto de fuga', img_save)
+    cv2.imshow('Imagen con puntos que votan', img_save)
     cv2.waitKey()
-
-    #print(votes)
 
     vanishing_point = np.argmax(votes)
     return vanishing_point
@@ -114,9 +117,8 @@ def hough(img, mag, m, height_votes):
 
 
 
-
-# Leer la imagen del pasillo
-img = cv2.imread('img/Contornos/pasillo3.pgm')#(512, 512, 3)
+# Leer la imagen
+img = cv2.imread('img/Contornos/poster.pgm')#(512, 512, 3)
 show_image(img, 'Image')
 
 # Convertir la imagen a escala de grises
@@ -141,13 +143,10 @@ sobely = cv2.Sobel(blur, cv2.CV_64F, 0, 1, ksize=3)
 mag = np.sqrt(sobelx**2 + sobely**2)#The magnitude of the gradient is computed using the formula sqrt(Gx^2 + Gy^2)
 mag = np.uint8(mag / np.max(mag) * 255) # normalizar la magnitud a valores entre 0 y 255
 mag_save = mag.copy()
-theta = np.arctan2(sobely,sobelx) # PREGUNTAR: En radianes? Rango 0,2pi?
+theta = np.arctan2(sobely,sobelx)
 
 
-# Creamos una versión vectorizada de la función
 normalize_angle_vectorized = np.vectorize(normalize_angle)
-
-# Aplicamos la función vectorizada a cada elemento de la matriz
 theta = normalize_angle_vectorized(theta)
 m = theta.copy()
 
@@ -155,46 +154,17 @@ m = theta.copy()
 #show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta1')
 
 # Aplicar la supresión de no máximos para afinar los bordes detectados
-#selecting the local maximum of the gradient magnitude in the direction of the gradient orientation.
-
-# The gradient direction is rounded to one of four possible angles (0, 45, 90, 135). 
-# to simplify the subsequent comparisons of gradient magnitude between neighboring pixels.
-# theta = theta * 180/(np.pi) # Rango: [0,135]
-# #theta = theta * 180/(np.pi) # Rango: [0,360]
-
-
-
-theta = np.round((theta) / 22.5)
-#theta = (theta / 22.5)
-suppressed = np.zeros_like(mag)# store the results of the non-maximum suppression operation
-for i in range(1, mag.shape[0]-1):
-    for j in range(1, mag.shape[1]-1):
-        (direction) = int(theta[i, j])
-        if direction == 0 or direction == 16 or direction == 15 or direction == 7 or direction == 8:
-            #abajo, arriba
-            neighbors = [mag[i, j-1], mag[i, j+1]]
-        elif direction == 13 or direction == 14 or direction == 5 or direction == 6:
-            #arribaIZQ, abajoDER
-            neighbors = [mag[i-1, j+1], mag[i+1, j-1]]
-        elif direction == 11 or direction == 12 or direction == 3 or direction == 4:
-            #IZQ, DER
-            neighbors = [mag[i-1, j], mag[i+1, j]]
-        elif direction == 9 or direction == 10 or direction == 1 or direction == 2:
-            #abajoIZQ, arribaDER
-            neighbors = [mag[i-1, j-1], mag[i+1, j+1]]
-
-        if mag[i, j] >= neighbors[0] and mag[i, j] >= neighbors[1]:
-            suppressed[i, j] = mag[i, j]
+suppressed = non_maximal_suppression(mag, theta)
 
 strong_i, strong_j = np.where(suppressed > 20)
 suppressed[strong_i,strong_j] = 255
-# show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
+show_image(cv2.normalize(suppressed, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Supressed')
 
 
 
 # HOUGH
 #height_votes = int(gray.shape[0]/2) - 40 #Pasillo1
-height_votes = int(gray.shape[0]/2) #Pasillo2y3
+height_votes = int(gray.shape[0]/2)#Pasillo2y3
 gray_hough_lines = gray.copy()
 vanishing_point = hough(gray, suppressed, m, height_votes)
 
@@ -202,10 +172,10 @@ vanishing_point = hough(gray, suppressed, m, height_votes)
 hough_lines(gray_hough_lines)
 
 
-print("van: " + str(vanishing_point))
-print("center: " + str(img.shape[0]/2))
+#print("van: " + str(vanishing_point))
+#print("center: " + str(height_votes))
 
 cv2.circle(img, (int(vanishing_point), height_votes), 5, (0, 0, 255), -1)
 
-cv2.imshow('Imagen con rectas de Hough', img)
+cv2.imshow('Imagen con punto de fuga', img)
 cv2.waitKey()
