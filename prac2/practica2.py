@@ -55,11 +55,9 @@ def hough_lines(gray_hough_lines):
 
 
 # Hough transform
-def hough(img, mag, m):
+def hough(img, mag, m, height_votes):
     img_save = img.copy()
     votes = np.zeros(img.shape[1])
-    #height_votes = int(img.shape[0]/2) -40 #Pasillo 1
-    height_votes = int(img.shape[0]/2) #Pasillo 2y3
     print(height_votes)
     threshold = 10
 
@@ -128,8 +126,7 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 sigma = 1
 kernel_size = 5*sigma
 
-
-blur = cv2.GaussianBlur(gray, (kernel_size, kernel_size), sigma) # PREGUNTAR: Sigma variable???
+blur = cv2.GaussianBlur(gray, (kernel_size, kernel_size), sigma)
 #show_image(blur, 'Blur')
 
 # Calcular los gradientes de la imagen utilizando el operador de Sobel
@@ -196,8 +193,10 @@ suppressed[strong_i,strong_j] = 255
 
 
 # HOUGH
+#height_votes = int(gray.shape[0]/2) - 40 #Pasillo1
+height_votes = int(gray.shape[0]/2) #Pasillo2y3
 gray_hough_lines = gray.copy()
-vanishing_point = hough(gray, suppressed, m)
+vanishing_point = hough(gray, suppressed, m, height_votes)
 
 
 hough_lines(gray_hough_lines)
@@ -206,8 +205,7 @@ hough_lines(gray_hough_lines)
 print("van: " + str(vanishing_point))
 print("center: " + str(img.shape[0]/2))
 
-#cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)-40), 5, (0, 0, 255), -1) #Pasillo1
-cv2.circle(img, (int(vanishing_point), int(img.shape[0]/2)), 5, (0, 0, 255), -1) #Pasillo2y3
+cv2.circle(img, (int(vanishing_point), height_votes), 5, (0, 0, 255), -1)
 
 cv2.imshow('Imagen con rectas de Hough', img)
 cv2.waitKey()
