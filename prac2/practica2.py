@@ -118,7 +118,7 @@ def hough(img, mag, m, height_votes):
 
 
 # Leer la imagen
-img = cv2.imread('img/Contornos/poster.pgm')#(512, 512, 3)
+img = cv2.imread('img/Contornos/pasillo2.pgm')#(512, 512, 3)
 show_image(img, 'Image')
 
 # Convertir la imagen a escala de grises
@@ -149,6 +149,7 @@ theta = np.arctan2(sobely,sobelx)
 normalize_angle_vectorized = np.vectorize(normalize_angle)
 theta = normalize_angle_vectorized(theta)
 m = theta.copy()
+
 
 #show_image(cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Magnitude')
 #show_image(cv2.normalize(theta/np.pi*128, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U), 'Theta1')
