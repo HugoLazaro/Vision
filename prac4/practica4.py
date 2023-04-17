@@ -30,66 +30,71 @@ def show_image(img, title):
     cv2.destroyAllWindows()
 
 # Posibles variables al invocar el script
-nfeatures = 100
-
+nfeatures = 0
+image_paths = images_list()
+image_1 = cv2.imread(image_paths[1], 0)
+image_2 = cv2.imread(image_paths[2], 0)
 for algo in ALGO:
     match algo:
         case "HARRIS":
-            pass
+            print("Algoritmo HARRIS")
+            # Set Harris detector parameters
+            blockSize = 2
+            apertureSize = 3
+            k = 0.04
+            threshold = 0.01
+            # Apply Harris corner detector to both images
+            corners1 = cv2.cornerHarris(image_1, blockSize, apertureSize, k)
+            corners2 = cv2.cornerHarris(image_2, blockSize, apertureSize, k)
+            
+            # Normalize corner response values
+            cv2.normalize(corners1, corners1, 0, 255, cv2.NORM_MINMAX)
+            cv2.normalize(corners2, corners2, 0, 255, cv2.NORM_MINMAX)
+
+            # Convert corner response values to uint8
+            corners1 = np.uint8(corners1)
+            corners2 = np.uint8(corners2)
+            
+            # Threshold corner response values
+            corners1[corners1 < threshold * corners1.max()] = 0
+            corners2[corners2 < threshold * corners2.max()] = 0
+
+            # Draw detected corners on original images
+            image_1[corners1 > 0] = [0, 0, 255]
+            image_2[corners2 > 0] = [0, 0, 255]
+
+            # Display images with detected corners
+            cv2.imshow('Image 1 with corners', image_1)
+            cv2.imshow('Image 2 with corners', image_2)
+            continue
         case "ORB":
-            detector = cv2.ORB_create(nfeatures)
+            print("Algoritmo ORB")
+            detector = cv2.ORB_create(500, 1.2,8,31,0,2)
         case "SIFT":
+            print("Algoritmo SIFT")
             detector = cv2.SIFT_create(nfeatures)
         case "AKAZE":
+            print("Algoritmo AKAZE")
             detector = cv2.AKAZE_create(nfeatures)
         case _:
             print("Algoritmo de detector de caracteristicas no reconocido")
-            
-
-    image_paths = images_list()
-    keypoints_list = []
-    descriptors_list = []
-
-    for path in image_paths:
-        image = cv2.imread(path, 0)
-
-        # Detectar los puntos de interés y descriptores en la imagen
-        keypoints, descriptors = detector.detectAndCompute(image, None)
-        keypoints_list.append(keypoints)
-        descriptors_list.append(descriptors)
-        # image_with_keypoints = cv2.drawKeypoints(image, keypoints, None)
-        # show_image(image_with_keypoints, "Image with keypoints")
 
 
-    # # Emparejamientos por fuerza bruta
-    # # BFMatcher with default params
-    # bf = cv2.BFMatcher()
-    # # matches es una lista de matches, cada uno es una pareja de descriptores con sus distancias
-    # matches = bf.knnMatch(descriptors_list[1], descriptors_list[2], k=2)
+    # Detectar los puntos de interés y descriptores en la imagen
+    keypoints_1, descriptors_1 = detector.detectAndCompute(image_1, None)
+    keypoints_2, descriptors_2 = detector.detectAndCompute(image_2, None)
 
-    # # Apply ratio test
-    # good_matches = []
-    # for m,n in matches:
-    #     if m.distance < 0.75*n.distance:
-    #         good_matches.append([m])
+    # Emparejamientos por fuerza bruta
+    # BFMatcher with default params
+    bf = cv2.BFMatcher()
+    # matches es una lista de matches, cada uno es una pareja de descriptores con sus distancias
+    matches = bf.knnMatch(descriptors_1, descriptors_2, k=2)
 
-    # image_matches = cv2.drawMatchesKnn(cv2.imread(image_paths[1], 0), keypoints_list[1], cv2.imread(image_paths[2], 0), keypoints_list[2], good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    # show_image(image_matches, "FB")
-
-
-    # FLANN based Matcher
-    # FLANN parameters
-    FLANN_INDEX_KDTREE = 1
-    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-    search_params = dict(checks=50)   # or pass empty dictionary
-    flann = cv2.FlannBasedMatcher(index_params,search_params)
-    matches = flann.knnMatch(descriptors_list[1],descriptors_list[2],k=2)
-    # Need to draw only good matches, so create a mask
-        
+    # Apply ratio test
     good_matches = []
     for m,n in matches:
-        if m.distance < 0.7*n.distance:
+        if m.distance < 0.75*n.distance:
             good_matches.append([m])
 
-    image_matches = cv2.drawMatchesKnn(cv2.imread(image_paths[1], 0), keypoints_list[1], cv2.imread(image_paths[2], 0), keypoints_list[2], good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    show_image(image_matches, "FLANN")
+    image_matches = cv2.drawMatchesKnn(image_1, keypoints_1, image_2, keypoints_2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    show_image(image_matches, "FB")
