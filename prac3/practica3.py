@@ -1,9 +1,3 @@
-# Import libraries
-# These libraries should be sufficient for this Practice.
-# However, if any other library is needed, please install it by yourself.
-import tarfile
-import imageio
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,7 +13,6 @@ import random
 import matplotlib.pyplot as plt
 from matplotlib import colors
 
-# MIOS
 from nn.unet import UNet
 from dataset.brain_image_set import BrainImageSet
 
@@ -29,6 +22,14 @@ TEST_DATA_PATH = './Task01_BrainTumour_2D/test_images/'
 TRAIN_LABELS_PATH = './Task01_BrainTumour_2D/training_labels/'
 TEST_LABELS_PATH = './Task01_BrainTumour_2D/test_labels/'
 
+# # Download the dataset
+# import tarfile
+# # !wget https://www.dropbox.com/s/zmytk2yu284af6t/Task01_BrainTumour_2D.tar.gz
+
+# # Unzip the '.tar.gz' file to the current directory
+# datafile = tarfile.open('Task01_BrainTumour_2D.tar.gz')
+# datafile.extractall()
+# datafile.close()
 
 # def visualize_dataset(num_images):
 #     # Get a list of randomly selected training and test image filenames
@@ -58,18 +59,6 @@ TEST_LABELS_PATH = './Task01_BrainTumour_2D/test_labels/'
 # num_images = 2
 
 # visualize_dataset(num_images)
-
-
-# def normalise_intensity(image, thres_roi=1.0):
-#     """ Normalise the image intensity by the mean and standard deviation """
-#     # ROI defines the image foreground
-#     val_l = np.percentile(image, thres_roi)
-#     roi = (image >= val_l)
-#     mu, sigma = np.mean(image[roi]), np.std(image[roi])
-#     eps = 1e-6
-#     image2 = (image - mu) / (sigma + eps)
-#     return image2
-
 
 # CUDA device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -105,7 +94,9 @@ criterion = nn.CrossEntropyLoss()
 ### End of your code ###
 
 # Datasets
+print("Creating training set")
 train_set = BrainImageSet(TRAIN_DATA_PATH, TRAIN_LABELS_PATH)
+print("Creating test set")
 test_set = BrainImageSet(TEST_DATA_PATH, TEST_LABELS_PATH)
 
 # Train the model
