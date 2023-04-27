@@ -11,7 +11,7 @@ https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html
 
 IMAGES_PATH = "./BuildingScene/"
 
-ALGO = ["AKAZE"]
+ALGO = ["HARRIS"]
 
 def images_list():
     file_names = os.listdir(IMAGES_PATH)
@@ -31,13 +31,28 @@ def show_image(img, title):
     cv2.destroyAllWindows()
 
 # Posibles variables al invocar el script
-nfeatures = 1000
+nfeatures = 1500
 image_paths = images_list()
 print(image_paths)
-image_1 = cv2.imread(image_paths[3], 0)
+image_1 = cv2.imread(image_paths[1], 0)
 image1 = cv2.imread(image_paths[1])
-image_2 = cv2.imread(image_paths[4], 0)
-image2 = cv2.imread(image_paths[2])
+image_2 = cv2.imread(image_paths[7], 0)
+image2 = cv2.imread(image_paths[7])
+
+#poster, 6
+# image_1 = cv2.imread(image_paths[2], 0)
+# image_2 = cv2.imread(image_paths[7], 0)
+
+#obj
+# image_1 = cv2.imread(image_paths[1], 0)
+# image_2 = cv2.imread(image_paths[8], 0)
+#obj il
+# image_1 = cv2.imread(image_paths[3], 0)
+# image_2 = cv2.imread(image_paths[11], 0)
+
+# image_1 = cv2.imread(image_paths[4], 0)
+# image_2 = cv2.imread(image_paths[5], 0)
+
 for algo in ALGO:
     match algo:
         case "HARRIS":
@@ -67,18 +82,18 @@ for algo in ALGO:
 
 
 
-            # tIni = time.time()
-            # dst = cv2.cornerHarris(image_2,2,3,0.04)
-            # #result is dilated for marking the corners, not important
-            # dst = cv2.dilate(dst,None)
-            # # Threshold for an optimal value, it may vary depending on the image.
-            # image2[dst>threshold*dst.max()]=[0,0,255]
+            tIni = time.time()
+            dst = cv2.cornerHarris(image_2,2,3,0.04)
+            #result is dilated for marking the corners, not important
+            dst = cv2.dilate(dst,None)
+            # Threshold for an optimal value, it may vary depending on the image.
+            image2[dst>threshold*dst.max()]=[0,0,255]
 
-            # tEnd = time.time()
-            # print("Tiempo en detectar esquinas en la imagen: " + str(tEnd-tIni))
-            # print("Numero de esquinas en imagen 2: " + str(len(keypoints_1)))
+            tEnd = time.time()
+            print("Tiempo en detectar esquinas en la imagen: " + str(tEnd-tIni))
+            print("Numero de esquinas en imagen 2: " + str(np.count_nonzero(dst>threshold*dst.max())))
 
-            # show_image(image2, 'Image 2 with corners')
+            show_image(image2, 'Image 2 with corners')
             
             continue
 
@@ -102,7 +117,7 @@ for algo in ALGO:
             detector = cv2.ORB_create(nfeatures=nfeatures, scaleFactor=2, edgeThreshold=15, fastThreshold=10)
         case "SIFT":
             print("Algoritmo SIFT")
-            detector = cv2.SIFT_create(nfeatures)
+            detector = cv2.SIFT_create()
         case "AKAZE":
             print("Algoritmo AKAZE")
             detector = cv2.AKAZE_create()
