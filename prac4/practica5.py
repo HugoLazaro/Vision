@@ -119,6 +119,13 @@ def main():
         h, w = img1.shape
 
         img1_transformed = cv.warpPerspective(img1, M, (img2.shape[1], img2.shape[0]))
+        
+        cv.imshow("transformed",img1_transformed)
+        cv.waitKey(0)
+
+        cv.imshow("img1",img1)
+        cv.waitKey(0)
+        #plt.imshow(img1_transformed, 'gray'),plt.show()
 
         # img1_resized = cv.resize(img1, (img2.shape[1] + img1.shape[1], img2.shape[0] + img1.shape[0]))
 
@@ -126,12 +133,60 @@ def main():
         # # Juntar las dos imágenes
         # result = cv.addWeighted(img2_resized, 0.5, img1_resized, 0.5, 0)
 
-        pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-
+        
         result = cv.addWeighted(img2, 0.5, img1_transformed, 0.5, 0)
-        plt.imshow(result, 'gray'),plt.show()
+        #plt.imshow(result, 'gray'),plt.show()
+        cv.imshow("weigh",result)
+        cv.waitKey(0)
 
+
+
+        pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+        
         dst = cv.perspectiveTransform(pts,M)
+        
+        h, w = img2.shape
+        pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+        print("pts")
+        print(pts)
+        dst = np.concatenate((pts,dst),axis=0)
+        #dst = dst.concat(pts)
+        print("dst")
+        print(dst)
+        minimos = np.amin(dst, axis=0, out=None)
+        maximos = np.amax(dst, axis=0, out=None)
+        # print(minimos)
+        # print(maximos)
+        dimensiones = maximos - minimos
+        print("Dimensiones")
+        print(dimensiones)  
+        
+        
+        
+        #matriz traslacion de minimos
+        matrix = np.array([[1.0,0.0,-minimos[0][0]],
+                           [0.0,1.0,-minimos[0][1]],
+                           [0.0,0.0,1.0]
+                           ])
+        print(matrix)
+        print(M)
+        print(np.dot(matrix,M))
+        img1_transformed_2 = cv.warpPerspective(img1, np.dot(matrix,M), (int(dimensiones[0][0]), int(dimensiones[0][1])))
+
+        img2_transformed_2 = cv.warpPerspective(img2, matrix, (int(dimensiones[0][0]), int(dimensiones[0][1])))
+
+        
+        cv.imshow("img_1_transformed_2",img1_transformed_2)
+        cv.waitKey(0)
+
+        cv.imshow("img_2_transformed_2",img2_transformed_2)
+        cv.waitKey(0)
+
+        final = np.maximum(img1_transformed_2, img2_transformed_2)
+        cv.imshow("final",final)
+        cv.waitKey(0)
+
+
         img2 = cv.polylines(img2,[np.int32(dst)],True,255,3, cv.LINE_AA)
     else:
         print( "Not enough matches are found - {}/{}".format(len(good), MIN_MATCH_COUNT) )
@@ -142,7 +197,8 @@ def main():
                         matchesMask = matchesMask, # draw only inliers
                         flags = 2)
     img3 = cv.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
-    plt.imshow(img3, 'gray'),plt.show()
+    cv.imshow("img3",img3)
+    cv.waitKey(0)
 
 
 if __name__ == "__main__":
